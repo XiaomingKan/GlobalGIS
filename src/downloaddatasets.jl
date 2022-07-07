@@ -38,7 +38,7 @@ function get_dataset_info()
         "https://osf.io/7jv3n/download")
     "powerplants"  ("WRI Global Power Plant Database", "WRI - Global Power Plant Database v1.10.zip",
         "https://chalmersuniversity.box.com/shared/static/ss6gycw7hf10e1fiicbxl5rgk08q5xr9.zip")
-        # switch to the official v1.2 link later (some plant cleanup is hardcoded for v1.1) 
+        # switch to the official v1.2 link later (some plant cleanup is hardcoded for v1.1)
         # "http://datasets.wri.org/dataset/540dcf46-f287-47ac-985d-269b04bea4c6/resource/c240ed2e-1190-4d7e-b1da-c66b72e08858/download/globalpowerplantdatabasev120")
     "timezones"    ("Time zone shape file", "timezones-with-oceans.shapefile.zip",
         "https://github.com/evansiroky/timezone-boundary-builder/releases/download/2019b/timezones-with-oceans.shapefile.zip")
@@ -86,7 +86,7 @@ function unpack_and_cleanup(shortname, filename, datafolder, dataset_info)
     function renameWDPAfiles(WDPAfolder)
         for filename in readdir(WDPAfolder)
             newname = replace(filename, filenameWDPA() => "WDPA-shapefile")
-            if newname != filename 
+            if newname != filename
                 mv(joinpath(WDPAfolder, filename), joinpath(WDPAfolder, newname))
             end
         end
