@@ -96,7 +96,7 @@ function savewind(datasource, org, model, rcp, altitude, year)
     end
     sz = size(wind)
     println("Saving as $filename...")
-    @time h5open(filename, "w") do file 
+    @time h5open(filename, "w") do file
         group = file["/"]
         dataset_data = create_dataset(group, "wind", datatype(Float32), dataspace(sz), chunk=(16,16,sz[3]), blosc=3)
         dataset_mean = create_dataset(group, "meanwind", datatype(Float32), dataspace(sz[1:2]), chunk=(16,16), blosc=3)
@@ -125,7 +125,7 @@ function savesolartemp(datavar, datasource, org, model, rcp, altitude, year)
     @time meandata = meandrop(data, dims=3)
     sz = size(data)
     println("Saving as $filename...")
-    @time h5open(filename, "w") do file 
+    @time h5open(filename, "w") do file
         group = file["/"]
         dataset_data = create_dataset(group, datavar, datatype(Float32), dataspace(sz), chunk=(16,16,sz[3]), blosc=3)
         dataset_mean = create_dataset(group, "mean$datavar", datatype(Float32), dataspace(sz[1:2]), chunk=(16,16), blosc=3)
@@ -168,7 +168,7 @@ function create_10year_meanwind(datasource, org, model, rcp, altitude, years)
         meanwindall += h5read(filename_wind(datasource, org, model, rcp, altitude, year), "/meanwind")
     end
     climatefolder = getconfig("climatefolder")
-    @time h5open("$climatefolder/meanwind_$(years[1])_$(years[end])_$(datasource)_$(model)_$(altitude)m.h5", "w") do file 
+    @time h5open("$climatefolder/meanwind_$(years[1])_$(years[end])_$(datasource)_$(model)_$(altitude)m.h5", "w") do file
         group = file["/"]
         dataset_mean = create_dataset(group, "meanwind", datatype(Float32), dataspace(size(meanwindall)), chunk=(16,16), blosc=3)
         dataset_extent = create_dataset(group, "extent", datatype(Float64), dataspace(size(extent)))
@@ -183,7 +183,7 @@ function create_10year_meanwind_era5(years)
         meanwindall += h5read(in_datafolder("era5wind$(year).h5"), "/meanwind")
     end
     climatefolder = getconfig("climatefolder")
-    @time h5open("$climatefolder/meanwind_$(years[1])_$(years[end])_ERA5.h5", "w") do file 
+    @time h5open("$climatefolder/meanwind_$(years[1])_$(years[end])_ERA5.h5", "w") do file
         group = file["/"]
         dataset_mean = create_dataset(group, "meanwind", datatype(Float32), dataspace(size(meanwindall)), chunk=(16,16), blosc=3)
         dataset_mean[:,:] = meanwindall/length(years)
@@ -200,7 +200,7 @@ function annual_wind_deviations(datasource, org, model, rcp, altitude)
     nlon, nlat = length(lonrange), length(latrange)
     ilons, ilats = (datasource == "HCLIM") ? (2:nlon-1,2:nlat-1) : (1:nlon,1:nlat)
     smallregions = resize_categorical(regions[ilons,ilats], regionlist, lonrange[ilons], latrange[ilats], erares; skipNOREGION=true)
-    ok = (datasource == "HCLIM") ? (smallregions .>= 1 .&& smallregions .<= 4) : (smallregions .== 1)
+    ok = (datasource == "HCLIM") ? (1 .<= smallregions .<= 4) : (smallregions .== 1)
     for (i, year1) in enumerate(years)
         meanwind1 = h5read(filename_wind(datasource, org, model, rcp, altitude, year1), "/meanwind")[ok]
         for (j, year2) in enumerate(years)
@@ -359,7 +359,7 @@ function saveSMHIwind(altitude=100, year=2018; compress=4)
     hours = size(u, 3)
     # saveTIFF(wind, filename, [1.0, 50.5, 31.99, 71.5])
     # similar_dataset(origdataset, wind, filename; compressmethod="ZSTD")
-    h5open(filename, "w") do file 
+    h5open(filename, "w") do file
         group = file["/"]
         dataset_wind = create_dataset(group, "wind", datatype(Float32), dataspace(size(u)...); chunk=(16,16,hours), compress)
         dataset_meanwind = create_dataset(group, "meanwind", datatype(Float32), dataspace(gridsize...); chunk=gridsize, compress)
@@ -424,7 +424,7 @@ function testSMHI(variable="v", altitude=100, year=2018)
     # end
 
     # TimeMem-1.0 gdalwarp -te 1 50 36 70 -tr 0.03 0.03 -t_srs EPSG:4326 NETCDF:"ua200m_NEU-3_ECMWF-ERAINT_evaluation_r1i1p1_HCLIMcom-HCLIM38-AROME_x2yn2v1_3hr_201801010000-201812312100.nc"://ua200m --config GDAL_CACHEMAX 9999 -wm 9999 -co COMPRESS=ZSTD -co BIGTIFF=YES ua200m_2018_03d.tif
-    # gdal_translate -b 1 -b 2 -b 3 --config GDAL_CACHEMAX 9999 -co COMPRESS=ZSTD -co BIGTIFF=YES testag.tif testag_small.tif 
+    # gdal_translate -b 1 -b 2 -b 3 --config GDAL_CACHEMAX 9999 -co COMPRESS=ZSTD -co BIGTIFF=YES testag.tif testag_small.tif
 
     # gdalwarp -of netCDF -te 1 51 32 70  -s_srs "+proj=lcca +lat_1=62.200000 +lat_0=62.200000 +lon_0=10.000000 +k_0=1.0 +x_0=669102.401911 +y_0=1265895.127345 +a=6371220.000000 +b=6371220.000000" -t_srs EPSG:4326 HDF5:"va200m_NEU-3_ECMWF-ERAINT_evaluation_r1i1p1_HCLIMcom-HCLIM38-AROME_x2yn2v1_3hr_201801010000-201812312100.nc"://va200m -to SRC_METHOD=NO_GEOTRANSFORM test.nc
 
@@ -439,14 +439,14 @@ function readSMHI(; year=2018, windatlas_only=true)
 
     datafolder = getconfig("datafolder")
     downloadsfolder = joinpath(datafolder, "downloads")
-    
+
     filename = joinpath(datafolder, "era5wind$year.h5")
     isfile(filename) && error("File $filename exists in $datafolder, please delete or rename manually.")
 
     windatlas = reshape(imresize(getwindatlas(), gridsize), (1,gridsize...))
 
     println("Creating HDF5 file:  $filename")
-    h5open(filename, "w") do file 
+    h5open(filename, "w") do file
         group = file["/"]
         dataset_wind = create_dataset(group, "wind", datatype(Float32), dataspace(hours,gridsize...), chunk=(hours,16,16), blosc=3)
         dataset_meanwind = create_dataset(group, "meanwind", datatype(Float32), dataspace(gridsize...), chunk=gridsize, blosc=3)
@@ -553,7 +553,7 @@ function save_and_recompress(data, filename, extent)
     !in(ext, [".tif", ".h5"]) && error("Extension $ext not recognized.")
     println("Saving as $filename...")
     if ext == ".h5"
-        @time h5open(filename, "w") do file 
+        @time h5open(filename, "w") do file
             group = file["/"]
             dataset_data = create_dataset(group, "wind", datatype(Float32), dataspace(size(data)), chunk=(16,16,size(data,3)), blosc=3)
             dataset_extent = create_dataset(group, "extent", datatype(Float64), dataspace(size(extent)))
