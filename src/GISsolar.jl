@@ -1,6 +1,6 @@
 solaroptions() = Dict(
     :gisregion => "Europe8",            # "Europe8", "Eurasia38", "Scand3"
-    :filenamesuffix => "",              # e.g. "_landx2" to save high land availability data as "GISdata_solar2018_Europe8_landx2.mat" 
+    :filenamesuffix => "",              # e.g. "_landx2" to save high land availability data as "GISdata_solar2018_Europe8_landx2.mat"
 
     :pv_density => 45,                  # Solar PV land use 45 Wp/m2 = 45 MWp/km2 (includes PV efficiency & module spacing, add latitude dependency later)
     :csp_density => 35,                 # CSP land use 35 W/m2
@@ -17,7 +17,7 @@ solaroptions() = Dict(
     :protected_codes => [1,2,3,4,5,8],  # IUCN codes to be excluded as protected areas. See codes in table below.
 
     :scenarioyear => "ssp2_2050",       # default scenario and year for population and grid access datasets
-    :era_year => 2018,                  # which year of the ERA5 time series to use 
+    :era_year => 2018,                  # which year of the ERA5 time series to use
 
     :res => 0.01,                       # resolution of auxiliary datasets [degrees per pixel]
     :erares => 0.28125,                 # resolution of ERA5 datasets [degrees per pixel]
@@ -27,40 +27,40 @@ solaroptions() = Dict(
     :cspclasses_min => [0.10,0.18,0.24,0.28,0.32],  # lower bound on annual CSP capacity factor for class X
     :cspclasses_max => [0.18,0.24,0.28,0.32,1.00],  # upper bound on annual CSP capacity factor for class X
 
-    :downsample_masks => 1,     # set to 2 or higher to scale down mask sizes to avoid GPU errors in Makie plots for large regions 
+    :downsample_masks => 1,     # set to 2 or higher to scale down mask sizes to avoid GPU errors in Makie plots for large regions
     :classB_threshold => 0.001  # minimum share of pixels within distance_elec_access km that must have grid access
-                                # for a pixel to be considered for solar class B. 
+                                # for a pixel to be considered for solar class B.
 )
     # Land types
-    #     0      'Water'                       
+    #     0      'Water'
     #     1      'Evergreen Needleleaf Forests'
-    #     2      'Evergreen Broadleaf Forests' 
+    #     2      'Evergreen Broadleaf Forests'
     #     3      'Deciduous Needleleaf Forests'
-    #     4      'Deciduous Broadleaf Forests' 
-    #     5      'Mixed Forests'               
-    #     6      'Closed Shrublands'           
-    #     7      'Open Shrublands'             
-    #     8      'Woody Savannas'              
-    #     9      'Savannas'                    
-    #    10      'Grasslands'                  
-    #    11      'Permanent Wetlands'          
-    #    12      'Croplands'                   
-    #    13      'Urban'                       
-    #    14      'Cropland/Natural'            
-    #    15      'Snow/Ice'                    
-    #    16      'Barren'                      
+    #     4      'Deciduous Broadleaf Forests'
+    #     5      'Mixed Forests'
+    #     6      'Closed Shrublands'
+    #     7      'Open Shrublands'
+    #     8      'Woody Savannas'
+    #     9      'Savannas'
+    #    10      'Grasslands'
+    #    11      'Permanent Wetlands'
+    #    12      'Croplands'
+    #    13      'Urban'
+    #    14      'Cropland/Natural'
+    #    15      'Snow/Ice'
+    #    16      'Barren'
 
     # Protected areas (IUCN codes from the WDPA)
-    #    1      'Ia'                'Strict Nature Reserve'          
-    #    2      'Ib'                'Wilderness Area'                
-    #    3      'II'                'National Park'                  
-    #    4      'III'               'Natural Monument'               
-    #    5      'IV'                'Habitat/Species Management'     
-    #    6      'V'                 'Protected Landscape/Seascape'   
+    #    1      'Ia'                'Strict Nature Reserve'
+    #    2      'Ib'                'Wilderness Area'
+    #    3      'II'                'National Park'
+    #    4      'III'               'Natural Monument'
+    #    5      'IV'                'Habitat/Species Management'
+    #    6      'V'                 'Protected Landscape/Seascape'
     #    7      'VI'                'Managed Resource Protected Area'
-    #    8      'Not Reported'      'Not Reported'                   
-    #    9      'Not Applicable'    'Not Applicable'                 
-    #    10     'Not Assigned'      'Not Assigned'                   
+    #    8      'Not Reported'      'Not Reported'
+    #    9      'Not Applicable'    'Not Applicable'
+    #    10     'Not Assigned'      'Not Assigned'
 
 
 mutable struct SolarOptions
@@ -198,7 +198,7 @@ function create_solar_masks(options, regions, gridaccess, popdens, land, protect
         protected_area[protected .== i] .= true
     end
 
-    # Pixels with electricity access for onshore wind A 
+    # Pixels with electricity access for onshore wind A
     gridA = (gridaccess .> 0)
 
     # Pixels with electricity access for onshore wind B and offshore wind
@@ -298,13 +298,13 @@ function calc_solar_vars(options, meanGTI, solarGTI, meanDNI, solarDNI, regions,
             GTI = solarGTI[:, i, j]
             DNI = solarDNI[:, i, j]
             eralon = eralons[i]
-            # get all high resolution row and column indexes within this ERA5 cell         
+            # get all high resolution row and column indexes within this ERA5 cell
             rowrange = lonmap[lon2row(eralon-erares/2, res):lon2row(eralon+erares/2, res)-1]
 
             for c in colrange, r in rowrange
                 (c == 0 || r == 0) && continue
                 reg = regions[r,c]
-                (reg == 0 || reg == NOREGION) && continue 
+                (reg == 0 || reg == NOREGION) && continue
 
                 area = cellarea[c]
                 class = pvclass[i,j]
@@ -372,98 +372,3 @@ end
 
 
 # Quick and ugly copy/paste hack to create resource maps for solar classes combined with masks.
-function GISsolarmap(; optionlist...)
-    options = SolarOptions(merge(solaroptions(), optionlist))
-    @unpack gisregion, era_year, filenamesuffix = options
-
-    regions, offshoreregions, regionlist, gridaccess, popdens, topo, land, protected, lonrange, latrange =
-                read_datasets(options)
-    meanGTI, solarGTI, meanDNI, solarDNI = read_solar_datasets(options, lonrange, latrange)
-
-    mask_rooftop, mask_plantA, mask_plantB =
-        create_solar_masks(options, regions, gridaccess, popdens, land, protected, lonrange, latrange, plotmasks=true)
-
-    pvmap, pvrooftopmap, cspmap =
-        calc_solar_map(options, meanGTI, solarGTI, meanDNI, solarDNI, regions, offshoreregions, regionlist,
-                mask_rooftop, mask_plantA, mask_plantB, lonrange, latrange)
-
-    return pvmap, pvrooftopmap, cspmap
-end
-
-function calc_solar_map(options, meanGTI, solarGTI, meanDNI, solarDNI, regions, offshoreregions, regionlist,
-                mask_rooftop, mask_plantA, mask_plantB, lonrange, latrange)
-
-    pvclass, cspclass = makesolarclasses(options, meanGTI, meanDNI)
-    eralons, eralats, lonmap, latmap, cellarea = eralonlat(options, lonrange, latrange)
-
-    println("Calculating GW potential and hourly capacity factors for each region and class...")
-    println("Interpolate ERA5 insolation later (maybe 4x runtime).")
-
-    @unpack era_year, pvclasses_min, cspclasses_min, res, erares, pv_density, csp_density, pvroof_area, plant_area = options
-
-    numreg = length(regionlist)
-    npvclasses, ncspclasses = length(pvclasses_min), length(cspclasses_min)
-    yearlength, nlons, nlats = size(solarGTI)
-    firsttime = DateTime(era_year, 1, 1)
-
-    # pvmap = zeros(size(regions))
-    # pvrooftopmap = zeros(size(regions))
-    # cspmap = zeros(size(regions))
-    pvmap = zeros(Int16, size(regions))
-    pvrooftopmap = zeros(Int16, size(regions))
-    cspmap = zeros(Int16, size(regions))
-
-    # Run times vary wildly depending on geographical area (because of far offshore regions with mostly zero wind speeds).
-    # To improve the estimated time of completing the progress bar, iterate over latitudes in random order.
-    Random.seed!(1)
-    updateprogress = Progress(nlats, 1)
-    @inbounds for j in randperm(nlats)
-        eralat = eralats[j]
-        colrange = latmap[lat2col(eralat+erares/2, res):lat2col(eralat-erares/2, res)-1]
-        for i = 1:nlons
-            meanGTI[i,j] == 0 && meanDNI[i,j] == 0 && continue
-            GTI = solarGTI[:, i, j]
-            DNI = solarDNI[:, i, j]
-            eralon = eralons[i]
-            # get all high resolution row and column indexes within this ERA5 cell         
-            rowrange = lonmap[lon2row(eralon-erares/2, res):lon2row(eralon+erares/2, res)-1]
-
-            for c in colrange, r in rowrange
-                (c == 0 || r == 0) && continue
-                reg = regions[r,c]
-                area = cellarea[c]
-
-                class = pvclass[i,j]
-                # can't use elseif here, probably some overlap in the masks
-                # @views is needed to make sure increment_windCF!() works with matrix slices
-                # also faster since it avoids making copies
-                @views if reg > 0 && class > 0
-                    if mask_rooftop[r,c] > 0
-                        # pvrooftopmap[r,c] = meanGTI[i,j]
-                        pvrooftopmap[r,c] = class
-                    elseif mask_plantA[r,c] > 0
-                        # pvmap[r,c] = meanGTI[i,j]
-                        pvmap[r,c] = class
-                    elseif mask_plantB[r,c] > 0
-                        # pvmap[r,c] = class
-                    end
-                end
-
-                class = cspclass[i,j]
-                # @views is needed to make sure increment_windCF!() works with matrix slices
-                # also faster since it avoids making copies
-                @views if reg > 0 && class > 0
-                    if mask_plantA[r,c] > 0
-                        # cspmap[r,c] = meanGTI[i,j]
-                        cspmap[r,c] = class
-                    elseif mask_plantB[r,c] > 0
-                        # cspmap[r,c] = class
-                    end
-                end
-            end
-        end
-        next!(updateprogress)
-    end
-
-    return pvmap, pvrooftopmap, cspmap
-end
