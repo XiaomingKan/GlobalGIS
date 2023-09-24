@@ -17,7 +17,7 @@ struct GeoArray{T,N} <: AbstractArray{T,N}
         #else
             #error("lon-lat limits incompatible with GeoArray size")
         #end
-    #end
+    end
 end
 
 GeoArray(arr, res, extent::Vector{<:Real}) = GeoArray(arr, res, (extent[1],extent[3]), (extent[2],extent[4]))
