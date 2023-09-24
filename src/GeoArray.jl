@@ -11,13 +11,13 @@ struct GeoArray{T,N} <: AbstractArray{T,N}
 
     # Check if lon-lat limits are valid before constructing.
     function GeoArray(arr, res, lonlim, latlim)
-        calcsize = (lonlim[2] - lonlim[1]) / res, (latlim[2] - latlim[1]) / res
-        if all(size(arr)[1:2] .≈ calcsize)
+        #calcsize = (lonlim[2] - lonlim[1]) / res, (latlim[2] - latlim[1]) / res
+        #if all(size(arr)[1:2] .≈ calcsize)
             return new{eltype(arr), ndims(arr)}(arr, res, lonlim, latlim)
-        else
-            error("lon-lat limits incompatible with GeoArray size")
-        end
-    end
+        #else
+            #error("lon-lat limits incompatible with GeoArray size")
+        #end
+    #end
 end
 
 GeoArray(arr, res, extent::Vector{<:Real}) = GeoArray(arr, res, (extent[1],extent[3]), (extent[2],extent[4]))
@@ -47,7 +47,7 @@ end
 
 lookup(a::GeoArray, args...; restrict=false) = a[lonlat_index(a, args...; restrict)]
 
-lon_indices_within(a::GeoArray, lonlow, lonhigh) = 
+lon_indices_within(a::GeoArray, lonlow, lonhigh) =
         max(1, lonindex(a, lonlow)):min(size(a,1), lonindex(a, lonhigh) - 1)
 lat_indices_within(a::GeoArray, latlow, lathigh) =
         max(1, latindex(a, lathigh)):min(size(a,2), latindex(a, latlow) - 1)
