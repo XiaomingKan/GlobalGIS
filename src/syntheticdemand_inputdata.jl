@@ -58,7 +58,7 @@ function ieademand()
         f == nothing && error("IEA country $country missing in GADM regions.")
         nationaldemand[f] = demand/1000
     end
-    return nationaldemand        # TWh/year 
+    return nationaldemand        # TWh/year
 end
 
 # Lookup electricity demand from a SSP database dataframe. Return a single dataframe row.
@@ -73,7 +73,7 @@ function calcdemandmultipliers(sspscenario::String, year::Int)
 
     # SSP scenarios also include radiative forcing targets, e.g. SSP2-34
     # (only for IAM energy system results, not underlying population & GDP scenario)
-    # We'll hardcode the 3.4 W/m2 scenario variant for now and make it a configurable option later. 
+    # We'll hardcode the 3.4 W/m2 scenario variant for now and make it a configurable option later.
     scen = uppercase(sspscenario)   # e.g. "SSP2-34"
 
     # We'll take the average result from IMAGE and MESSAGE models.
@@ -109,7 +109,7 @@ function makeregionaldemanddata(gisregion, sspscenario::String, year::Int)
     natpop = getnationalpopulation(scenarioyear)            # people/GADMregion (vector, length numGADMcountries)
     demandpercapita = ieademand()./natpop * 1e6             # MWh/year/capita (vector, length numGADMcountries)
     ssp5region = make_sspregionlookup(ssp5)                 # SSP 5-region names (vector, length numGADMcountries)
-    demandmult = calcdemandmultipliers(sspscenario, year)   # Dict: SSP region name => multiplier 
+    demandmult = calcdemandmultipliers(sspscenario, year)   # Dict: SSP region name => multiplier
 
     numreg = length(regionlist)
     regionaldemand = zeros(numreg)
@@ -131,7 +131,7 @@ function makeregionaldemanddata(gisregion, sspscenario::String, year::Int)
                 end
                 regionaldemand[reg] += demandpercapita[countrycode] * pop[i,j]/1e6 * demandmult[sspreg]     # TWh/year
                 regionalpop[reg] += pop[i,j]        # unit: people
-                regionalgdp[reg] += gdp[i,j]        # unit: USD(2010) 
+                regionalgdp[reg] += gdp[i,j]        # unit: USD(2010)
             end
         end
         next!(updateprogress)
@@ -144,7 +144,7 @@ end
 
 function buildtrainingdata(; gisregion="Europe8", sspscenario="ssp2-34", sspyear=2050, era_year=2018, numcenters=3, mindist=3.3)
     println("\nBuilding training data for $gisregion...")
-    regionlist, demandpercapita, gdppercapita = 
+    regionlist, demandpercapita, gdppercapita =
                     makeregionaldemanddata(gisregion, sspscenario, sspyear)
     scenarioyear = "$(sspscenario[1:4])_$sspyear"
     hours, temp_popcenters = GIStemp(gisregion, scenarioyear, era_year, numcenters, mindist)
@@ -235,7 +235,7 @@ function regional_timezone_offsets_Jan1(; gisregion="Europe8", scenarioyear="ssp
         pops = Float64[]
         for idx in zoneindices
             tzname = tznames[idx]
-            zone = tzname[1:3] == "Etc" ? TimeZone(tzname, TimeZones.Class(:LEGACY)) : TimeZone(tzname)
+            zone = tzname[1:3] == "Etc" ? TimeZone(tzname, TimeZones.Class(:LEGACY)) : TimeZone(tzname, TimeZones.Class(:LEGACY))
             push!(zones, zone)
             firsthour = ZonedDateTime(DateTime(era_year,1,1,0), zone)
             hours = firsthour : Hour(1) : firsthour + Hour(numhours-1)
